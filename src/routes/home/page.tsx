@@ -1,6 +1,57 @@
 import { Html } from "@elysia/html";
 
 export function HomePage() {
+  const productSlider = [
+    {
+      image: "/public/thumbnails/midnight-expresso-thumbnail_01.webp",
+      name: "Midnight Espresso",
+      notes: ["Coffee", "Hazelnut", "Vanilla"],
+      price: 150,
+    },
+    {
+      image: "/public/thumbnails/pina-paraiso-thumbnail_01.webp",
+      name: "Piña Paraíso",
+      notes: ["Pineapple", "Coconut", "Vanilla"],
+      price: 150,
+    },
+    {
+      image: "/public/thumbnails/sparkling-royal-thumbnail_01.webp",
+      name: "Sparkling Royal",
+      notes: ["Mint", "Blackcurrant", "Tonka Bean"],
+      price: 150,
+    },
+    {
+      image: "/public/thumbnails/angels-share-thumbnail_01.webp",
+      name: "Angels' Share",
+      notes: ["Cognac", "Tonka Bean", "Oak"],
+      price: 285,
+    },
+    {
+      image: "/public/thumbnails/fievre-verte-thumbnail_01.webp",
+      name: "Fiévre Verte",
+      notes: ["Absinthe", "Violet Leaf", "Patchouli"],
+      price: 285,
+    },
+    {
+      image: "/public/thumbnails/vodka-on-the-rocks-thumbnail_01.webp",
+      name: "Vodka on the Rocks",
+      notes: ["On the Rocks accord", "Lily of the Valley", "Oakmoss"],
+      price: 285,
+    },
+    {
+      image: "/public/thumbnails/angels-share-paradis-thumbnail_01.webp",
+      name: "Angels' Share Paradis",
+      notes: ["Raspberry", "Cognac", "Rose"],
+      price: 390,
+    },
+    {
+      image: "/public/thumbnails/apple-brandy-on-the-rocks-thumbnail_01.webp",
+      name: "Apple Brandy on the Rocks",
+      notes: ["On the Rocks accord", "Apple Brandy"],
+      price: 285,
+    },
+  ] as const;
+
   const editorialCards = [
     {
       title: "THE KILIAN BAR",
@@ -26,7 +77,7 @@ export function HomePage() {
       image: "/public/kilian_small_format.webp",
       alt: "Kilian Paris 30ml perfume collection displayed on pedestals",
     },
-  ];
+  ] as const;
 
   return (
     <html lang="en" dir="ltr" data-theme="light">
@@ -291,8 +342,122 @@ export function HomePage() {
             </div>
           </section>
           <section
-            aria-labelledby="discover-more-heading"
+            class="relative px-10 md:px-14 max-w-6xl mx-auto mt-16 mb-32"
+            aria-labelledby="the-kilian-bar-heading"
+            data-carousel
+          >
+            <h2
+              id="the-kilian-bar-heading"
+              class="text-center text-lg md:text-xl font-normal tracking-[-0.01em] text-neutral-900 mb-10 md:mb-12"
+            >
+              The Kilian Bar
+            </h2>
+            <button
+              type="button"
+              data-carousel-prev
+              aria-label="Previous product"
+              class="absolute left-0 top-[42%] -translate-y-1/2 p-2 text-neutral-500 hover:text-neutral-950 transition-colors cursor-pointer z-10"
+            >
+              <svg
+                class="w-7 h-7"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <div class="overflow-hidden">
+              <div
+                data-carousel-track
+                class="grid grid-flow-col auto-cols-[calc((100%-1.75rem)/2)] md:auto-cols-[calc((100%-5.25rem)/4)] gap-x-7 select-none touch-pan-y cursor-grab active:cursor-grabbing"
+              >
+                {productSlider.map((product) => (
+                  <article
+                    data-carousel-slide
+                    class="text-center grid place-items-center gap-y-4"
+                  >
+                    <img
+                      src={product.image}
+                      alt={`${product.name} bottle`}
+                      draggable="false"
+                      class="pointer-events-none"
+                    />
+                    <h3 class="font-semibold text-neutral-950 tracking-wider uppercase">
+                      {product.name}
+                    </h3>
+                    <button
+                      type="button"
+                      class="uppercase text-[11px] font-medium tracking-[0.2em] text-neutral-600 bg-white border border-neutral-300 rounded-[4px] px-4 py-1.5 transition-colors duration-150 hover:bg-neutral-900 hover:text-white hover:border-neutral-900 cursor-pointer"
+                    >
+                      Quick Shop
+                    </button>
+                    <p class="text-sm">{product.notes.join(", ")}</p>
+                    <data class="text-sm" value={String(product.price)}>
+                      ${product.price}
+                    </data>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              data-carousel-next
+              aria-label="Next product"
+              class="absolute right-0 top-[42%] -translate-y-1/2 p-2 text-neutral-500 hover:text-neutral-950 transition-colors cursor-pointer z-10"
+            >
+              <svg
+                class="w-7 h-7"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </section>
+          <section
+            aria-label="Angels' Share Collection Highlight"
+            class="relative w-full h-[96vh] min-h-[540px] bg-black overflow-hidden"
+          >
+            <img
+              class="h-full w-full object-cover object-center"
+              src="/public/lotions_hero.webp"
+              alt="Exclusive Kilian body lotions"
+            />
+
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"
+              aria-hidden="true"
+            />
+            <div class="absolute inset-x-0 bottom-10 md:bottom-12 flex flex-col items-center text-center px-6 text-white">
+              <h1 class="text-lg md:text-xl font-normal uppercase tracking-[0.06em]">
+                Your Ritual Starts Here
+              </h1>
+              <p class="mt-2 text-xs text-neutral-200 tracking-normal">
+                Nurture the body &amp; senses
+              </p>
+              <a
+                href="/perfumes/angels-share"
+                class="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-white underline underline-offset-6 decoration-1 hover:text-neutral-300 transition-colors"
+              >
+                Discover
+              </a>
+            </div>
+          </section>
+          <section
             class="px-6 md:px-10 py-14 md:py-20"
+            aria-labelledby="discover-more-heading"
           >
             <h2
               id="discover-more-heading"
