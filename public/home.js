@@ -14,45 +14,42 @@ window.addEventListener("scroll", handleScroll, { passive: true });
 // Run once on load in case the page starts scrolled down
 handleScroll();
 
-(() => {
-  const root = document.querySelector("[data-carousel]");
-  if (!root) return;
+const createCarousel = (root, { cloneCount = 4 } = {}) => {
+  if (!root) return null;
 
   const track = root.querySelector("[data-carousel-track]");
   const prevBtn = root.querySelector("[data-carousel-prev]");
   const nextBtn = root.querySelector("[data-carousel-next]");
+  if (!track) return null;
+
   const originalSlides = Array.from(
     track.querySelectorAll("[data-carousel-slide]"),
   );
 
   const totalReal = originalSlides.length;
-  const cloneCount = 4; // Matches max visible cards on desktop
-  if (totalReal <= cloneCount) return;
+  const clones = Number(root.dataset.carouselClones) || cloneCount;
+  if (totalReal <= clones) return null;
 
-  // 1. Clone first and last N cards for seamless infinite wrapping
-  const headClones = originalSlides.slice(0, cloneCount).map((node) => {
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  // 1. Clone first and last N cards
+  const createClone = (node) => {
     const clone = node.cloneNode(true);
     clone.setAttribute("aria-hidden", "true");
     return clone;
-  });
+  };
 
-  const tailClones = originalSlides.slice(-cloneCount).map((node) => {
-    const clone = node.cloneNode(true);
-    clone.setAttribute("aria-hidden", "true");
-    return clone;
-  });
-
-  track.prepend(...tailClones);
-  track.append(...headClones);
+  track.prepend(...originalSlides.slice(-clones).map(createClone));
+  track.append(...originalSlides.slice(0, clones).map(createClone));
 
   const allSlides = Array.from(track.children);
-  let currentIndex = cloneCount; // Start at the first real slide
+  let currentIndex = clones;
   let isDown = false;
   let isDragging = false;
   let startX = 0;
   let dragDeltaX = 0;
 
-  // Measure the exact distance (card width + grid gap) between two adjacent slides
   const getStepWidth = () => allSlides[1].offsetLeft - allSlides[0].offsetLeft;
 
   const setPosition = (offsetPx, animate = true) => {
@@ -66,13 +63,12 @@ handleScroll();
     setPosition(-currentIndex * getStepWidth(), animate);
   };
 
-  // If the track sits inside a clone zone, jump invisibly to the real counterpart
   const normalizeLoopIndex = () => {
-    if (currentIndex >= totalReal + cloneCount) {
+    if (currentIndex >= totalReal + clones) {
       currentIndex -= totalReal;
       syncToIndex(false);
-      void track.offsetWidth; // Force reflow before next animation
-    } else if (currentIndex < cloneCount) {
+      void track.offsetWidth;
+    } else if (currentIndex < clones) {
       currentIndex += totalReal;
       syncToIndex(false);
       void track.offsetWidth;
@@ -86,37 +82,43 @@ handleScroll();
   };
 
   // 2. Arrow Controls & Transition Cleanup
-  prevBtn?.addEventListener("click", () => stepBy(-1));
-  nextBtn?.addEventListener("click", () => stepBy(1));
-  track.addEventListener("transitionend", normalizeLoopIndex);
+  prevBtn?.addEventListener("click", () => stepBy(-1), { signal });
+  nextBtn?.addEventListener("click", () => stepBy(1), { signal });
+  track.addEventListener("transitionend", normalizeLoopIndex, { signal });
 
-  // 3. Unified Mouse & Touch Swiping (Pointer Events)
-  track.addEventListener("pointerdown", (e) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
+  // 3. Unified Mouse & Touch Swiping
+  track.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
 
-    normalizeLoopIndex();
-    isDown = true;
-    isDragging = false;
-    startX = e.clientX;
-    dragDeltaX = 0;
-  });
+      normalizeLoopIndex();
+      isDown = true;
+      isDragging = false;
+      startX = e.clientX;
+      dragDeltaX = 0;
+    },
+    { signal },
+  );
 
-  track.addEventListener("pointermove", (e) => {
-    if (!isDown) return;
+  track.addEventListener(
+    "pointermove",
+    (e) => {
+      if (!isDown) return;
 
-    dragDeltaX = e.clientX - startX;
+      dragDeltaX = e.clientX - startX;
 
-    // 6px threshold so clicking "Quick Shop" doesn't trigger a drag
-    if (!isDragging && Math.abs(dragDeltaX) > 6) {
-      isDragging = true;
-      track.setPointerCapture(e.pointerId);
-    }
+      if (!isDragging && Math.abs(dragDeltaX) > 6) {
+        isDragging = true;
+        track.setPointerCapture(e.pointerId);
+      }
 
-    if (isDragging) {
-      const baseOffset = -currentIndex * getStepWidth();
-      setPosition(baseOffset + dragDeltaX, false);
-    }
-  });
+      if (isDragging) {
+        setPosition(-currentIndex * getStepWidth() + dragDeltaX, false);
+      }
+    },
+    { signal },
+  );
 
   const endSwipe = () => {
     if (!isDown) return;
@@ -125,10 +127,7 @@ handleScroll();
     if (!isDragging) return;
 
     const stepWidth = getStepWidth();
-    const threshold = stepWidth * 0.2;
-
-    if (Math.abs(dragDeltaX) > threshold) {
-      // Advance by the number of cards dragged (minimum 1)
+    if (Math.abs(dragDeltaX) > stepWidth * 0.2) {
       const cardsMoved =
         Math.sign(dragDeltaX) *
         Math.max(1, Math.round(Math.abs(dragDeltaX) / stepWidth));
@@ -137,16 +136,14 @@ handleScroll();
 
     syncToIndex(true);
 
-    // Reset dragging flag on next tick to block accidental button clicks on release
     requestAnimationFrame(() => {
       isDragging = false;
     });
   };
 
-  track.addEventListener("pointerup", endSwipe);
-  track.addEventListener("pointercancel", endSwipe);
+  track.addEventListener("pointerup", endSwipe, { signal });
+  track.addEventListener("pointercancel", endSwipe, { signal });
 
-  // Block click events on child buttons if the user was dragging the track
   track.addEventListener(
     "click",
     (e) => {
@@ -155,12 +152,24 @@ handleScroll();
         e.stopPropagation();
       }
     },
-    true,
+    { capture: true, signal },
   );
 
-  // 4. Keep alignment sharp on viewport resize
-  window.addEventListener("resize", () => syncToIndex(false));
+  // 4. Resize alignment
+  window.addEventListener("resize", () => syncToIndex(false), { signal });
 
-  // Initial position
   syncToIndex(false);
-})();
+
+  // Public control surface
+  return {
+    next: () => stepBy(1),
+    prev: () => stepBy(-1),
+    refresh: () => syncToIndex(false),
+    destroy: () => controller.abort(),
+  };
+};
+
+// Initialize all carousels on the page
+document
+  .querySelectorAll("[data-carousel]")
+  .forEach((el) => createCarousel(el));

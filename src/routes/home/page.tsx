@@ -4,48 +4,56 @@ export function HomePage() {
   const productSlider = [
     {
       image: "/public/thumbnails/midnight-expresso-thumbnail_01.webp",
+      slug: "/perfumes/midnight-expresso",
       name: "Midnight Espresso",
       notes: ["Coffee", "Hazelnut", "Vanilla"],
       price: 150,
     },
     {
       image: "/public/thumbnails/pina-paraiso-thumbnail_01.webp",
+      slug: "/perfumes/pina-paraiso",
       name: "Piña Paraíso",
       notes: ["Pineapple", "Coconut", "Vanilla"],
       price: 150,
     },
     {
       image: "/public/thumbnails/sparkling-royal-thumbnail_01.webp",
+      slug: "/perfumes/sparkling-royal",
       name: "Sparkling Royal",
       notes: ["Mint", "Blackcurrant", "Tonka Bean"],
       price: 150,
     },
     {
       image: "/public/thumbnails/angels-share-thumbnail_01.webp",
+      slug: "/perfumes/angels-share",
       name: "Angels' Share",
       notes: ["Cognac", "Tonka Bean", "Oak"],
       price: 285,
     },
     {
       image: "/public/thumbnails/fievre-verte-thumbnail_01.webp",
+      slug: "/perfumes/fievre-verte",
       name: "Fiévre Verte",
       notes: ["Absinthe", "Violet Leaf", "Patchouli"],
       price: 285,
     },
     {
       image: "/public/thumbnails/vodka-on-the-rocks-thumbnail_01.webp",
+      slug: "/perfumes/vodka-on-the-rocks",
       name: "Vodka on the Rocks",
       notes: ["On the Rocks accord", "Lily of the Valley", "Oakmoss"],
       price: 285,
     },
     {
       image: "/public/thumbnails/angels-share-paradis-thumbnail_01.webp",
+      slug: "/perfumes/angels-share-paradis",
       name: "Angels' Share Paradis",
       notes: ["Raspberry", "Cognac", "Rose"],
       price: 390,
     },
     {
       image: "/public/thumbnails/apple-brandy-on-the-rocks-thumbnail_01.webp",
+      slug: "/perfumes/apple-brandy-on-the-rocks",
       name: "Apple Brandy on the Rocks",
       notes: ["On the Rocks accord", "Apple Brandy"],
       price: 285,
@@ -389,7 +397,7 @@ export function HomePage() {
                       class="pointer-events-none"
                     />
                     <h3 class="font-semibold text-neutral-950 tracking-wider uppercase">
-                      {product.name}
+                      <a href={product.slug}>{product.name}</a>
                     </h3>
                     <button
                       type="button"
